@@ -9,9 +9,10 @@ and a paper-trading research bot.
 
 A.W. Strategy trades index and metal futures (NQ/MNQ, ES/MES, RTY, YM, GC/MGC) on 5 to 30 minute
 charts. A trade needs three things to line up: **market structure** in its favour, a **reaction at
-a level** (the 79% retracement or a fair value gap) and **order flow** behind it (intrabar delta,
-its z-score and a flow score). Dealer gamma (GEX) levels and the day's busiest option strikes,
-computed from CBOE data during the session, are drawn on the chart, ranked, each with a plan.
+a level** (the 79% retracement, a fair value gap, a swing anchored VWAP or a volume-profile level)
+and **order flow** behind it (intrabar delta, its z-score, a flow score, a liquidity sweep and
+rolling pressure). Dealer gamma (GEX) levels and the day's busiest option strikes, computed from
+CBOE data during the session, are drawn on the chart, ranked, each with a plan.
 
 > Research and engineering, not financial advice. Trade it on paper first.
 
@@ -20,15 +21,18 @@ computed from CBOE data during the session, are drawn on the chart, ranked, each
 | Step | Rule |
 |---|---|
 | Context | The last break of structure (5-bar swings) goes the trade's way and the 30-minute chart agrees. |
-| Location | Price touches the 79% retracement of the impulse leg or a fair value gap, and the candle closes back off it. |
-| Confirmation | Gap reactions, intrabar delta (z-score, buyers' share, cumulative delta) and relative volume. |
+| Location | Price touches the 79% retracement of the impulse leg, a fair value gap, the swing anchored VWAP or a volume-profile level, and the candle closes back off it. |
+| Confirmation | Gap reactions, intrabar delta (z-score, buyers' share, cumulative delta), relative volume, a recent liquidity sweep and rolling buying or selling pressure. |
 | Timing | London and New York sessions only. |
-| Signal | At least 5 of 8 factors, on candle close (no repainting). |
+| Signal | At least 6 of 10 factors, on candle close (no repainting). |
 | Risk | Stop beyond the reaction candle and its zone plus 0.25 ATR, skipped if wider than 3 ATR. Targets at 1R and 2R, stop to breakeven after 1R, early exit on a structure flip or broken order flow. |
 
 On the chart: delta, the flow score and the delta z-score next to the script's name (no tables
-covering the chart), the signals, and the GEX walls, gamma flip and 8 biggest strikes ranked #1 to
-#8 alongside today's busiest option strikes (OV #1 to #4). Hover any level for its plan.
+covering the chart), only the latest trade, the nearest liquidity pools, and the GEX walls, gamma
+flip and 8 biggest strikes ranked #1 to #8 alongside today's busiest option strikes (OV #1 to #4).
+Hover any level for its plan. HaP AVWAP and Buyers & Sellers Profile stay on the chart next to it;
+their levels, PhenLabs' liquidity sweeps and Zeiierman's rolling pressure are rebuilt inside the
+strategy ([details](docs/strategy.md#indicators-folded-in)).
 
 Ten more playbooks run alongside it (breakout, pullback, range, mean reversion, news, spread,
 scalping, order flow, GEX + order flow, GEX + anchored VWAP), each with its own signals and record.
@@ -98,7 +102,10 @@ docs/                                 Strategy, data pipeline and bot documentat
 | [gex-explained](https://github.com/FlashAlpha-lab/gex-explained), [Options-Gamma-Exposure-Analysis-Tool](https://github.com/CodeCraftIA/Options-Gamma-Exposure-Analysis-Tool) | The GEX math |
 | [Kronos](https://github.com/shiyu-coder/Kronos) | The 2-hour forecast |
 | "Stop Guessing If a Gamma Exposure (GEX) Level Will Reverse — Use AVWAP", Grateful Futures Trading University | The GEX + anchored VWAP playbook |
-| HaP AVWAP / Anchored VWAP by agahakanaga (MPL-2.0) | Translated into English in `tradingview/hap_avwap_english.pine` |
+| HaP AVWAP / Anchored VWAP by agahakanaga (MPL-2.0) | The swing anchored VWAPs, and the English translation in `tradingview/hap_avwap_english.pine` |
+| Buyers & Sellers Profile + Dynamic S/R by Zeiierman | Volume-profile support and resistance levels |
+| Liquidity Sweep Reversal & Targets by PhenLabs | Liquidity pools and the sweep factor |
+| Rolling Candle Profile by Zeiierman | The rolling-pressure factor |
 
 Looked at and not used: [nautilus_trader](https://github.com/nautechsystems/nautilus_trader) and
 [Nautilus-Web-Interface](https://github.com/Black101081/Nautilus-Web-Interface) (a full trading

@@ -1,13 +1,19 @@
 # A.W. Strategy on TradingView
 
 `tradingview/aw_strategy.pine` is a Pine Script v6 indicator for index and metal futures (NQ/MNQ,
-ES/MES, RTY, YM, GC/MGC) on 5 to 30 minute charts. It marks setups, draws ranked GEX and options-flow levels with a plan for each, and fires alerts. It
-never places orders.
+ES/MES, RTY, YM, GC/MGC) on 5 to 30 minute charts. It marks setups, draws ranked GEX and
+options-flow levels with a plan for each, and fires alerts. It never places orders.
+
+It's meant to run next to two indicators that stay on the chart, HaP AVWAP (use the English copy,
+[below](#hap-avwap-in-english)) and Buyers & Sellers Profile + Dynamic S/R by Zeiierman. Their
+levels, a liquidity sweep and rolling pressure all feed the one A.W. signal; see
+[Indicators folded in](#indicators-folded-in).
 
 - [Install](#install)
 - [What's on the chart](#whats-on-the-chart)
 - [The A.W. signal](#the-aw-signal)
 - [Entries and exits](#entries-and-exits)
+- [Indicators folded in](#indicators-folded-in)
 - [GEX and options-flow levels](#gex-and-options-flow-levels)
 - [Ten more playbooks](#ten-more-playbooks)
 - [GEX + anchored VWAP](#gex--anchored-vwap)
@@ -39,29 +45,39 @@ are:
 | Flow score | −1 (sellers in control) to +1 (buyers in control); ±0.5 is in control, ±0.2 leaning |
 | Z-score | This bar's delta against the last 30 bars; past ±1.5 is unusual |
 
-On the chart itself: breaks of structure (BOS, CHoCH), the 79% retracement, fair value gaps and
-inverse gaps, big-print bubbles, LONG / SHORT signals with their exits, the playbooks' small
-labels, the GEX + AVWAP line and the [GEX and options-flow levels](#gex-and-options-flow-levels).
-Hover any label for the details.
+On the chart itself, kept to what matters now:
+
+- the last 4 breaks of structure (BOS, CHoCH) and the 79% retracement of the current leg,
+- the 6 fair value gaps and inverse gaps nearest to price (finished gaps are removed),
+- the latest A.W. trade only: its LONG / SHORT label (with its score), stop, targets and exit,
+- the nearest buy-side (BSL) and sell-side (SSL) liquidity pool,
+- the [GEX and options-flow levels](#gex-and-options-flow-levels),
+- big-print bubbles, the playbooks' labels while their trades are open, and the GEX + AVWAP line
+  while it's live (each can be switched off).
+
+"Keep past A.W. trades on the chart" and "Playbook labels on the chart: All" bring the history
+back. Hover any label for the details.
 
 ## The A.W. signal
 
-Eight factors, each met or not, scored on candle close:
+Ten factors, each met or not, scored on candle close:
 
 | Factor | Met when |
 |---|---|
 | Structure | The last break of a 5-bar swing went the trade's way and the 30-minute structure agrees (the trend filter is a setting). A break against the trend is labelled CHoCH. |
 | Fibonacci 79% | Price recently tagged the 79% retracement of the leg that broke structure and is still in the leg's lower half (upper half for shorts). |
-| Gap touched | Price touched a fair value gap or inverse gap this bar or the last (three-candle gaps of at least 0.15 ATR; one closed through flips into an inverse gap). |
-| Reaction | The candle closed back off it: past the gap's midpoint, or a bullish (bearish) close back above (below) the 79% level. |
+| Level touched | Price touched a fair value gap or inverse gap (three-candle gaps of at least 0.15 ATR; one closed through flips into an inverse gap), the swing-low AVWAP (swing-high for shorts) or a volume-profile support (resistance) this bar or the last. |
+| Reaction | The candle closed back off it: past the gap's midpoint, a bullish (bearish) close back above (below) the 79% level, the AVWAP or the volume level. |
 | Order flow | More of the last 10 gap reactions were bullish than bearish (bearish for shorts): support respected or resistance broken. |
 | Delta | Buyers dominate the bar (delta z-score past +1.5 or 60%+ of the volume) and cumulative delta rose over the last 5 bars or a bullish CVD divergence formed (mirror for shorts). Delta comes from 1-minute bars inside each candle. |
 | Volume | At least the 20-bar average. |
 | Session | London 02:00–05:00, New York AM 08:30–11:00 or PM 13:30–15:30, New York time. |
+| Liquidity sweep | A sell-side pool was swept in the last 20 bars and price is still above it (a buy-side sweep for shorts). |
+| Pressure | Rolling buying pressure leads selling by at least 0.25 and price is above a rising 21 EMA (the mirror for shorts). |
 
-A LONG or SHORT needs structure, a touch of the 79% level or a gap, a reaction there, a session (a
-setting), a stop no wider than 3 ATR and a score of at least 5 of 8 (a setting). Hover the label
-to see which factors lined up.
+A LONG or SHORT needs structure, a touch of the 79% level or another level, a reaction there, a
+session (a setting), a stop no wider than 3 ATR and a score of at least 6 of 10 (a setting). Hover
+the label to see which factors lined up and which level was touched.
 
 The flow score follows [SuperFlow](https://github.com/profitnotiondaily/atasx-superflow) with its
 weights: absorption, delta z-score, big prints, effort versus result, CVD slope, rolling CVD and
@@ -76,6 +92,22 @@ sizes.
 - **Targets** at 1R and 2R. The stop moves to breakeven after 1R.
 - **Exits** (SELL or COVER) on the stop, the second target, a structure flip against the trade, or
   order flow disrespected (a support gap closed through while long, a resistance gap while short).
+
+## Indicators folded in
+
+The indicators below are rebuilt in A.W.'s own code with their default settings, so they feed the
+signal without their own labels and tables on the chart. Their ideas, not their code; credit to
+their authors.
+
+| Indicator | In A.W. Strategy |
+|---|---|
+| HaP AVWAP / Anchored VWAP, by agahakanaga | The VWAP of the highs anchored at the most important swing high of the last 500 bars and the VWAP of the lows anchored at the most important swing low (10/5-bar pivots that moved at least 2 ATR away, scored by that move, the move into them, volume, wick, position in the range and age; broken ones score a quarter). A bullish candle that dips to the swing-low AVWAP and closes above it (HaP's S mark) is a level touched and held for longs; HaP's R mark for shorts. Keep HaP AVWAP on the chart to see the lines. |
+| Buyers & Sellers Profile + Dynamic S/R, by Zeiierman | Each 5-bar swing checked against a 72-row volume profile of the 600 bars before it; a strong nearby node turns it into support or resistance, scored 0–100, removed on a close 0.1 ATR beyond it. A touch of a support that closes above it is a level touched (held on a bullish candle). Keep the indicator on the chart to see the levels. |
+| Liquidity Sweep Reversal & Targets, by PhenLabs | Unbroken 10-bar swing highs (buy-side liquidity) and lows (sell-side). A sweep wicks through one and closes back with the other side absorbing (55%+ on close location, volume and body), no deeper than 1.5 ATR. It's the liquidity-sweep factor, and the nearest pool on each side is drawn as a dashed BSL / SSL line. |
+| Rolling Candle Profile, by Zeiierman | Buying and selling pressure from each candle's travel, body, close location and wick rejection, with a 3-bar half-life, against a 21 EMA anchor. It's the pressure factor. |
+
+Each has its own settings group and can be switched off (a switched-off factor counts as met).
+The heavy profile and AVWAP loops run on the last 5,000 bars.
 
 ## GEX and options-flow levels
 
